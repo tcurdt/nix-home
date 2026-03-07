@@ -46,16 +46,10 @@
         local dirty=""
         [ $? -ne 0 ] && dirty="*"
 
-        printf " %s(%s%s)%s" "$C_YLW" "$branch" "$dirty" "$C_RST"
+        printf " (%s%s)" "$branch" "$dirty"
       }
 
-      C_RST='\[\e[0m\]'
-      C_GRN='\[\e[32m\]'
-      C_BLU='\[\e[34m\]'
-      C_RED='\[\e[31m\]'
-      C_YLW='\[\e[33m\]'
-
-      PS1='$C_GRN\u@\h$C_RST $C_BLU\w$C_RST$(__prompt_git_segment)\n$C_RED\$$C_RST '
+      PS1='\[\e[32m\]\u@\h\[\e[0m\] \[\e[34m\]\w\[\e[0m\]\[\e[33m\]$(__prompt_git_segment)\[\e[0m\]\n\[\e[31m\]\$\[\e[0m\] '
     '';
   };
 
