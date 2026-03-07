@@ -5,6 +5,7 @@ Personal Home Manager setup as a reusable flake module.
 ## What this provides
 
 - `homeManagerModules.tcurdt` as the main module to import from other flakes
+- `nixosModules.default` to enable Home Manager on NixOS with sane defaults
 - Platform-specific layering via `modules/darwin.nix` and `modules/linux.nix`
 - Helper commands:
   - `nix run .#home-check` to build/validate the current system target
@@ -31,6 +32,15 @@ Import module:
 ```nix
 home-manager.users.tcurdt.imports = [
   inputs.home.homeManagerModules.tcurdt
+];
+```
+
+For NixOS, import the integration module once:
+
+```nix
+modules = [
+  inputs.home.nixosModules.default
+  ./machine.nix
 ];
 ```
 

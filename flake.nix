@@ -97,6 +97,15 @@
         linux = import ./modules/linux.nix;
       };
 
+      nixosModules.default =
+        { lib, ... }:
+        {
+          imports = [ home-manager.nixosModules.default ];
+
+          home-manager.useGlobalPkgs = lib.mkDefault true;
+          home-manager.useUserPackages = lib.mkDefault true;
+        };
+
       homeConfigurations = lib.listToAttrs (
         map (system: {
           name = "${username}-${system}";
