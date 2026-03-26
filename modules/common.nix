@@ -2,7 +2,10 @@
 {
   home.packages = [
     pkgs.nano
-    pkgs.zellij
+    # pkgs.zellij # tmux
+    (pkgs.writeShellScriptBin "mssh" ''
+      exec ssh -t "$@" "tmux new -A -s tcurdt"
+    '')
     pkgs.curl
     pkgs.yq
     pkgs.jq
@@ -13,22 +16,22 @@
     pkgs.mmv
     pkgs.file
     pkgs.dnsutils
-    pkgs.doggo
+    pkgs.doggo # dns client
     pkgs.parallel
     pkgs.just
     pkgs.diceware
     pkgs.xh
     pkgs.pv
     pkgs.croc
-    pkgs.sd
-    pkgs.fd
-    pkgs.eza
-    pkgs.bat
-    pkgs.procs
-    pkgs.ripgrep
+    pkgs.eza # better ls
+    pkgs.bat # better cat
+    pkgs.procs # better ps
+    pkgs.fd # better find
+    pkgs.sd # better sed
+    pkgs.ripgrep # better grep
     pkgs.ruplacer
-    pkgs.dust
-    pkgs.nh
+    pkgs.dust # better du
+    pkgs.nh # better nix cli
     pkgs.nixfmt-rfc-style
   ];
 
@@ -160,7 +163,7 @@
     };
   };
 
-  programs.lazygit.enable = true;
+  # programs.lazygit.enable = true;
 
   programs.neovim = {
     enable = true;
@@ -173,6 +176,64 @@
   programs.tmux = {
     enable = true;
     clock24 = true;
+    keyMode = "vi";
+    baseIndex = 1;
+    historyLimit = 20000;
+    escapeTime = 0;
+
+    extraConfig = ''
+      unbind -a
+
+      bind -T root -N "Switch to window 1" M-1 select-window -t 1
+      bind -T root -N "Switch to window 2" M-2 select-window -t 2
+      bind -T root -N "Switch to window 3" M-3 select-window -t 3
+      bind -T root -N "Switch to window 4" M-4 select-window -t 4
+      bind -T root -N "Switch to window 5" M-5 select-window -t 5
+      bind -T root -N "Switch to window 6" M-6 select-window -t 6
+      bind -T root -N "Switch to window 7" M-7 select-window -t 7
+      bind -T root -N "Switch to window 8" M-8 select-window -t 8
+      bind -T root -N "Switch to window 9" M-9 select-window -t 9
+
+      bind -T root -N "Create a new window" M-n new-window
+
+      bind -T root -N "Select pane to the left"  M-Left  if -F "#{pane_at_left}"   "" "select-pane -L"
+      bind -T root -N "Select pane below"        M-Down  if -F "#{pane_at_bottom}" "" "select-pane -D"
+      bind -T root -N "Select pane above"        M-Up    if -F "#{pane_at_top}"    "" "select-pane -U"
+      bind -T root -N "Select pane to the right" M-Right if -F "#{pane_at_right}"  "" "select-pane -R"
+
+      bind -T root   -N "Enter split-pane mode" M-s switch-client -T split
+      bind -T split  -N "Split left"   Left  split-window -hb
+      bind -T split  -N "Split right"  Right split-window -h
+      bind -T split  -N "Split above"  Up    split-window -vb
+      bind -T split  -N "Split below"  Down  split-window -v
+
+      # arrows to navigate, v to select, y to yank
+      bind -T root -N "Enter copy mode" M-c copy-mode
+
+      bind -T root -N "Save buffer to file" M-w if -F "#{buffer_size}" {
+        choose-buffer {
+          command-prompt -p "Save to path:" {
+            save-buffer -b %% "%%"
+          }
+        }
+      } {
+        display-message "No buffers to save"
+      }
+
+      bind -T root -N "Detach from session" M-d detach-client
+
+      bind -T root  -N "Open command prompt" : command-prompt
+      bind -T split -N "Open command prompt" : command-prompt
+
+      bind -T root  -N "List key bindings"       ? list-keys -N -T root
+      bind -T split -N "List split key bindings" ? list-keys -N -T split
+
+      # set -g status-style          "bg=black,fg=white"
+      # set -g status-left           "[#{session_name}] "
+      # set -g status-left-length    20
+      # set -g status-right          "#{?client_key_table,[#{client_key_table}] ,}%H:%M"
+      # set -g status-right-length   30
+    '';
   };
 
   home.shellAliases = {

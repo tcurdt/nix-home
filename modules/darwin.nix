@@ -3,6 +3,7 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
   home.shellAliases = {
     xallow = "f(){ xattr -cr $1 }; f";
     xclear = "f(){ xattr -c $1 }; f";
+    ghv = "gh repo view --web";
   };
 
   home.sessionVariables = {
