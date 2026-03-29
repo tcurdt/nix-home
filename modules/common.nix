@@ -23,6 +23,7 @@
     pkgs.xh
     pkgs.pv
     pkgs.croc
+    pkgs.zoxide # better cd
     pkgs.eza # better ls
     pkgs.bat # better cat
     pkgs.procs # better ps

@@ -14,5 +14,6 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
   home.packages = [
     pkgs.nixd
     pkgs.devbox
+    pkgs.nil
   ];
 }
