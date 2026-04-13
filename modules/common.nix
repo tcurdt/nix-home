@@ -13,6 +13,7 @@
     pkgs.unzip
     pkgs.htop
     pkgs.gitMinimal
+    # pkgs.lesspipe
     pkgs.mmv
     pkgs.file
     pkgs.dnsutils
@@ -23,6 +24,9 @@
     pkgs.xh
     pkgs.pv
     pkgs.croc
+    # pkgs.nushell
+    # pkgs.carapace # option completion
+    # pkgs.starship # prompt
     pkgs.zoxide # better cd
     pkgs.eza # better ls
     pkgs.bat # better cat
@@ -267,6 +271,10 @@
     };
   };
 
+  programs.less = {
+    enable = true;
+  };
+
   home.sessionPath = [
     "$HOME/go/bin"
     "$HOME/.bin"
@@ -276,6 +284,8 @@
     PAGER = "less";
     EDITOR = "nano";
     CLICOLOR = 1;
+    # LESSOPEN = "|${pkgs.lesspipe}/bin/lesspipe %s";
+    # LESS = "-R";
   };
 
   home.stateVersion = lib.mkDefault "25.11";
