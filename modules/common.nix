@@ -1,32 +1,48 @@
 { lib, pkgs, ... }:
 {
   home.packages = [
+
     pkgs.nano
+    pkgs.helix
+
+    pkgs.gitMinimal
+    # pkgs.jujutsu
+
+    pkgs.curl
+    pkgs.xh
+    pkgs.croc
+    # pkgs.zrok # waiting for darwin
+
+    # pkgs.tmux # via config
     # pkgs.zellij # tmux
     (pkgs.writeShellScriptBin "mssh" ''
       exec ssh -t "$@" "tmux new -A -s tcurdt"
     '')
-    pkgs.curl
+
+    # mine.envq
     pkgs.yq
     pkgs.jq
     pkgs.openssl
+    pkgs.diceware
     pkgs.unzip
     pkgs.htop
-    pkgs.gitMinimal
-    # pkgs.lesspipe
+
+    pkgs.nh
+    pkgs.nixfmt-rfc-style
+    # pkgs.nvd
+    # pkgs.nix-output-monitor
+
+    # pkgs.lesspipe # via config
+    # pkgs.nushell
+    # pkgs.carapace # option completion
+    # pkgs.starship # prompt
     pkgs.mmv
     pkgs.file
     pkgs.dnsutils
     pkgs.doggo # dns client
     pkgs.parallel
     pkgs.just
-    pkgs.diceware
-    pkgs.xh
     pkgs.pv
-    pkgs.croc
-    # pkgs.nushell
-    # pkgs.carapace # option completion
-    # pkgs.starship # prompt
     pkgs.zoxide # better cd
     pkgs.eza # better ls
     pkgs.bat # better cat
@@ -36,8 +52,6 @@
     pkgs.ripgrep # better grep
     pkgs.ruplacer
     pkgs.dust # better du
-    pkgs.nh # better nix cli
-    pkgs.nixfmt-rfc-style
   ];
 
   programs.bash = {
@@ -168,15 +182,13 @@
     };
   };
 
-  # programs.lazygit.enable = true;
-
-  programs.neovim = {
-    enable = true;
-    viAlias = true;
-    vimAlias = true;
-    extraConfig = "";
-    plugins = [ ];
-  };
+  # programs.neovim = {
+  #   enable = true;
+  #   viAlias = true;
+  #   vimAlias = true;
+  #   extraConfig = "";
+  #   plugins = [ ];
+  # };
 
   programs.tmux = {
     enable = true;
@@ -247,16 +259,17 @@
     ll = "eza -la --group --octal-permissions --no-permissions --time-style long-iso";
     ls = "eza";
     g = "git";
-    lg = "lazygit";
     tssh = "ssh -A -o UserKnownHostsFile=/dev/null ";
     passphrase = "diceware --no-caps -n 7 -d -";
-    p = "pnpm";
-    k = "kubectl";
-    kall = "kubectl get all -A";
+
     date_utc = "date -u -Iseconds";
     date_berlin = "TZ=Europe/Berlin date -Iseconds";
     dates = "echo -n 'UTC: ' && date_utc && echo -n 'BER: ' && date_berlin";
     systemtime = "chronyc makestep && chronyc tracking";
+
+    p = "pnpm";
+    k = "kubectl";
+    kall = "kubectl get all -A";
   };
 
   programs.direnv = {
