@@ -7,16 +7,11 @@ Personal Home Manager setup as a reusable flake module.
 - `homeManagerModules.tcurdt` as the main module to import from other flakes
 - `nixosModules.default` to enable Home Manager on NixOS with sane defaults
 - Platform-specific layering via `modules/darwin.nix` and `modules/linux.nix`
-- Helper commands:
-  - `nix run .#home-check` to build/validate the current system target
-  - `nix run .#home-switch` to apply the current system target
 
 ## Local usage
 
 ```bash
 nix flake check path:.
-nix run .#home-check
-# nix run .#home-switch
 ```
 
 ## Consume from another flake
@@ -42,6 +37,14 @@ modules = [
   inputs.home.nixosModules.default
   ./machine.nix
 ];
+```
+
+After changing this flake, update consumers such as `nix-server`:
+
+```bash
+cd ../nix-server
+just update
+just check
 ```
 
 ## Layout

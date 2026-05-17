@@ -37,10 +37,27 @@
         "type": "github"
       }
     },
+    "nixpkgs-darwin-fish": {
+      "locked": {
+        "lastModified": 1775286898,
+        "narHash": "sha256-w9ij48PxqWzLa6wfo9eWGAvIl0gEPCsW/FEwzKZ0hfI=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "9b8e6819224551756919099c1fce6e347f5a3803",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "9b8e6819224551756919099c1fce6e347f5a3803",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "home-manager": "home-manager",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "nixpkgs-darwin-fish": "nixpkgs-darwin-fish"
       }
     }
   },

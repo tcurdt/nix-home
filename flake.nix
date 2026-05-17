@@ -4,10 +4,10 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
 
-    # mine.url = "";
-
     home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+    nixpkgs-darwin-fish.url = "github:NixOS/nixpkgs/9b8e6819224551756919099c1fce6e347f5a3803";
   };
 
   outputs =
@@ -21,14 +21,21 @@
       lib = nixpkgs.lib;
       username = "tcurdt";
 
+      pinned-fish =
+        final: prev:
+        if prev.stdenv.hostPlatform.isDarwin then
+          {
+            fish = inputs.nixpkgs-darwin-fish.legacyPackages.${prev.stdenv.hostPlatform.system}.fish;
+          }
+        else
+          { };
+
       systems = [
         "aarch64-darwin"
         # "x86_64-darwin"
         "x86_64-linux"
         # "aarch64-linux"
       ];
-
-      forAllSystems = lib.genAttrs systems;
 
       homeDirBySystem = {
         aarch64-darwin = "/Users/${username}";
@@ -39,8 +46,14 @@
 
       mkHome =
         system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ pinned-fish ];
+          };
+        in
         home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.${system};
+          inherit pkgs;
           extraSpecialArgs = { inherit inputs; };
           modules = [
             self.homeManagerModules.tcurdt
@@ -51,37 +64,6 @@
           ];
         };
 
-      mkSwitchApp =
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-          hm = "${home-manager.packages.${system}.home-manager}/bin/home-manager";
-          app = pkgs.writeShellScriptBin "home-switch" ''
-            set -euo pipefail
-            exec ${hm} switch --flake ".#${username}-${system}" "$@"
-          '';
-        in
-        {
-          type = "app";
-          program = "${app}/bin/home-switch";
-          meta.description = "Switch Home Manager for current system";
-        };
-
-      mkCheckApp =
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-          hm = "${home-manager.packages.${system}.home-manager}/bin/home-manager";
-          app = pkgs.writeShellScriptBin "home-check" ''
-            set -euo pipefail
-            exec ${hm} build --flake ".#${username}-${system}" "$@"
-          '';
-        in
-        {
-          type = "app";
-          program = "${app}/bin/home-check";
-          meta.description = "Build Home Manager for current system";
-        };
     in
     {
       homeManagerModules = {
@@ -115,12 +97,7 @@
         }) systems
       );
 
-      apps = forAllSystems (system: {
-        home-switch = mkSwitchApp system;
-        home-check = mkCheckApp system;
-      });
-
-      checks = forAllSystems (system: {
+      checks = lib.genAttrs systems (system: {
         home = (mkHome system).activationPackage;
       });
     };
