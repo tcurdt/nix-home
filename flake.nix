@@ -7,7 +7,7 @@
     home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    nixpkgs-darwin-fish.url = "github:NixOS/nixpkgs/9b8e6819224551756919099c1fce6e347f5a3803";
+    nixpkgs-darwin-fish.url = "github:NixOS/nixpkgs/07c38d21e9ea6a3ae3fe0092d9974a00ee6d466a";
   };
 
   outputs =
