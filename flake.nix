@@ -2,12 +2,14 @@
   description = "home management for tcurdt";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
+    # nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    home-manager.url = "github:nix-community/home-manager/release-25.11";
+    # home-manager.url = "github:nix-community/home-manager/release-25.11";
+    home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    nixpkgs-darwin-fish.url = "github:NixOS/nixpkgs/9b8e6819224551756919099c1fce6e347f5a3803";
+    # nixpkgs-darwin-fish.url = "github:NixOS/nixpkgs/9b8e6819224551756919099c1fce6e347f5a3803";
   };
 
   outputs =
@@ -21,14 +23,14 @@
       lib = nixpkgs.lib;
       username = "tcurdt";
 
-      pinned-fish =
-        final: prev:
-        if prev.stdenv.hostPlatform.isDarwin then
-          {
-            fish = inputs.nixpkgs-darwin-fish.legacyPackages.${prev.stdenv.hostPlatform.system}.fish;
-          }
-        else
-          { };
+      # pinned-fish =
+      #   final: prev:
+      #   if prev.stdenv.hostPlatform.isDarwin then
+      #     {
+      #       fish = inputs.nixpkgs-darwin-fish.legacyPackages.${prev.stdenv.hostPlatform.system}.fish;
+      #     }
+      #   else
+      #     { };
 
       systems = [
         "aarch64-darwin"
@@ -49,7 +51,7 @@
         let
           pkgs = import nixpkgs {
             inherit system;
-            overlays = [ pinned-fish ];
+            # overlays = [ pinned-fish ];
           };
         in
         home-manager.lib.homeManagerConfiguration {

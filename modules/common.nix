@@ -28,7 +28,7 @@
     pkgs.htop
 
     pkgs.nh
-    pkgs.nixfmt-rfc-style
+    pkgs.nixfmt
     # pkgs.nvd
     # pkgs.nix-output-monitor
 
