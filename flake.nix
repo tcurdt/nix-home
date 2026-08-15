@@ -5,7 +5,7 @@
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    comin.url = "github:nlewo/comin/v0.11.0";
+    comin.url = "github:nlewo/comin";
     comin.inputs.nixpkgs.follows = "nixpkgs";
   };
 

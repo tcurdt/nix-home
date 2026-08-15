@@ -12,8 +12,7 @@
       {
         name = "origin";
         url = "https://github.com/tcurdt/nix-home.git";
-        branches.testing.name = "main";
-        # branches.main.name = "main";
+        branches.main.name = "main";
         # flakeSubdirectory = ".";
         # auth.access_token_path = cfg.sops.secrets."gitlab/access_token".path;
         poller.period = 300; # 5 minutes
