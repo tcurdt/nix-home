@@ -1,8 +1,15 @@
 check:
     nix flake check --all-systems path:.
 
+# local version
 build:
     nix build --eval-store daemon --store ssh-ng://home-ber --no-link path:.#nixosConfigurations.home-ber.config.system.build.toplevel
 
+# local version (better disable comin)
 switch:
-    nixos-rebuild switch --flake .
+    nix run --inputs-from path:. nixpkgs#nixos-rebuild -- switch --no-reexec --flake path:.#home-ber --build-host home-ber --target-host home-ber
+
+# comin
+released:
+    ssh home-ber \
+      "nixos-rebuild switch --flake github:tcurdt/nix-home#home-ber"

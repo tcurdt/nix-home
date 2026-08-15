@@ -1,59 +1,19 @@
 {
-  config,
   pkgs,
-  lib,
-  inputs,
   ...
 }:
-let
-
-  inherit (lib) mkOption;
-  # inherit (lib.types) listOf str;
-
-  cfg = config.ops;
-
-in
 {
+  users.users.ops = {
+    profile = import ../profiles/tcurdt.nix;
+    shell = pkgs.bash;
 
-  options = {
-    ops = {
-      keyFiles = mkOption {
-        default = [ ];
-        description = "...";
-        # type = listOf str; # or whatever type these actually are
-      };
-      home-manager = mkOption {
-        default = ../home/tcurdt.nix;
-        description = "...";
-      };
-    };
-  };
+    openssh.authorizedKeys.keyFiles = [ ../keys/tcurdt.pub ];
 
-  imports = [ inputs.home-manager.nixosModules.default ];
-
-  config = {
-
-    home-manager.useGlobalPkgs = true;
-    home-manager.useUserPackages = true;
-
-    users.users.ops = {
-      shell = pkgs.bash;
-      openssh.authorizedKeys.keyFiles = cfg.keyFiles;
-
-      isNormalUser = true;
-      extraGroups = [
-        "wheel"
-        "docker"
-      ];
-      hashedPassword = "*"; # no password allowed
-
-    };
-
-    home-manager.users.ops = (import cfg.home-manager pkgs) // {
-      # home.shellAliases = {
-      #   foo = "eza";
-      # };
-      # home.stateVersion = "23.11";
-    };
+    isNormalUser = true;
+    extraGroups = [
+      "wheel"
+      "docker"
+    ];
+    hashedPassword = "*"; # no password allowed
   };
 }

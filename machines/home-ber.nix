@@ -17,7 +17,6 @@
 
     ../users/root.nix
     ../users/ops.nix
-    { ops.keyFiles = [ ../keys/tcurdt.pub ]; }
 
     { users.users.root.password = "secret"; }
 
@@ -26,16 +25,17 @@
     #     80
     #     443
     #   ];
+    # }
+
+    # {
     #   services.caddy = {
     #     enable = true;
-
     #     # virtualHosts."homeassistant.home" = {
     #     #   extraConfig = ''
     #     #     reverse_proxy 127.0.0.1:2020
     #     #     tls internal
     #     #   '';
     #     # };
-
     #   };
     # }
 

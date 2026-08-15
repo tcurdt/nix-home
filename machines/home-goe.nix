@@ -17,7 +17,6 @@
 
     ../users/root.nix
     ../users/ops.nix
-    { ops.keyFiles = [ ../keys/tcurdt.pub ]; }
 
     { users.users.root.password = "secret"; }
 
@@ -26,16 +25,17 @@
     #     80
     #     443
     #   ];
+    # }
+
+    # {
     #   services.caddy = {
     #     enable = true;
-
     #     # virtualHosts."homeassistant.home" = {
     #     #   extraConfig = ''
     #     #     reverse_proxy 127.0.0.1:2020
     #     #     tls internal
     #     #   '';
     #     # };
-
     #   };
     # }
 
@@ -48,11 +48,9 @@
     #     log-driver = "journald";
     #     log-level = "info";
     #   };
-
     #   virtualisation.oci-containers = {
     #     backend = "docker";
     #     containers = {
-
     #       watchtower = {
     #         autoStart = true;
     #         image = "containrrr/watchtower";
@@ -75,24 +73,19 @@
     #           "/var/run/docker.sock:/var/run/docker.sock"
     #         ];
     #       };
-
     #       test = {
     #         image = "ghcr.io/tcurdt/test-project:test";
     #         labels = {
     #           "com.centurylinklabs.watchtower.enable" = "true";
     #         };
-
     #         ports = [ "127.0.0.1:2015:2015" ];
-
     #         environmentFiles = [ "/run/credentials/env.test" ];
-
     #         login = {
     #           registry = "ghcr.io";
     #           username = "tcurdt";
     #           passwordFile = "/run/credentials/password.registry.github";
     #         };
     #       };
-
     #     };
     #   };
     # }
