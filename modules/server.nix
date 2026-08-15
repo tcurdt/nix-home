@@ -138,27 +138,7 @@
   # max-free = ${toString (1024 * 1024 * 1024)}
   # '';
 
-  # system.autoUpgrade = {
-  #   enable = true;
-  #   dates = "04:00";
-  #   # date = "hourly";
-  #   # date = "minutely";
-  #   # date = "*:0/5";
-  #   allowReboot = true;
-  #   flake = inputs.self.outPath;
-  #   flake = "github:YourUser/yourRepo";
-  #   flags = [
-  #     "--update-input"
-  #     "nixpkgs"
-  #     "--no-write-lock-file"
-  #     "-L" # print build logs
-  #   ];
-  #   randomizedDelaySec = "15min";
-  # };
-
   systemd = {
-
-    # services.sshd.wantedBy = pkgs.lib.mkForce ["multi-user.target"];
 
     network.wait-online.enable = false;
     services.NetworkManager-wait-online.enable = false;
@@ -178,40 +158,6 @@
       hybrid-sleep.enable = false;
     };
 
-    # update system
-
-    # # https://github.com/Infinisil/nixbot/blob/feefc301bbe44742570bce0974005a2714a950e6/module.nix#L84-L113
-    # services.git-updater = {
-    #   description = "pull from git";
-    #   serviceConfig = {
-    #     Type = "oneshot";
-    #     User = "nixbot";
-    #     WorkingDirectory = "/var/lib/nixbot/nixpkgs/master";
-    #   };
-    #   path = [ pkgs.git ];
-    #   script = ''
-    #     git -C repo config gc.autoDetach false
-    #     if [ -d repo ]; then
-    #       git -C repo fetch
-    #       old=$(git -C repo rev-parse @)
-    #       new=$(git -C repo rev-parse @{u})
-    #       if [ $old != $new ]; then
-    #         git -C repo rebase --autostash
-    #         echo "Updated from $old to $new"
-    #       fi
-    #     else
-    #       git clone https://github.com/NixOS/nixpkgs repo
-    #       git -C repo remote add channels https://github.com/NixOS/nixpkgs-channels
-    #       echo "Initialized at $(git -C repo rev-parse @)"
-    #     fi
-    #   '';
-    # };
-    # timers.git-updater = {
-    #   wantedBy = [ "timers.target" ];
-    #   partOf = [ "git-updater.service" ];
-    #   timerConfig.OnUnitInactiveSec = 60;
-    # };
-
     # log files
 
     services.cleanup-logs = {
@@ -226,7 +172,6 @@
       partOf = [ "cleanup-logs.service" ];
       timerConfig.OnCalendar = [
         "*-*-* 03:00:00" # daily at 3am
-        # "daily"
       ];
     };
 
@@ -258,22 +203,11 @@
     pkgs.nano
     pkgs.curl
     pkgs.gitMinimal
-
-    pkgs.nh
-    pkgs.nvd
-    pkgs.nix-output-monitor
-
-    # inputs.release-go.packages.${pkgs.system}.default
-    # (import ../scripts/foo.nix { inherit pkgs; })
-
-    # pkgs.vulnix # vulnerability scanner
-    # pkgs.clamav # virus scanner
-
   ];
 
-  environment.sessionVariables = {
-    FLAKE = "/etc/nixos/flake";
-  };
+  # environment.sessionVariables = {
+  #   FLAKE = "/etc/nixos/flake";
+  # };
 
   # environment.variables = {
   #   PATH = [
@@ -313,15 +247,4 @@
       AuthenticationMethods publickey
     '';
   };
-
-  # https://github.com/maralorn/nix-output-monitor
-  # system.activationScripts.diff = {
-  #   supportsDryActivation = true;
-  #   text = ''
-  #     if [[ -e /run/current-system ]]; then
-  #        ${pkgs.nix}/bin/nix store diff-closures /run/current-system "$systemConfig"
-  #     fi
-  #   '';
-  # };
-
 }
