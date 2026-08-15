@@ -1,0 +1,50 @@
+name: ci
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "README.md"
+
+jobs:
+  build-x86:
+    name: build x86 systems
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        configuration: [
+            # "home-goe",
+            "home-ber",
+          ]
+    steps:
+      - name: free disk space
+        uses: jlumbroso/free-disk-space@main
+      - uses: actions/checkout@v7
+      - uses: DeterminateSystems/nix-installer-action@main
+      - run: nix build .#nixosConfigurations.${{ matrix.configuration }}.config.system.build.toplevel
+
+  # build-arm:
+  #   name: build arm systems
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       # architecture: [arm64]
+  #       configuration: [
+  #           # "app",
+  #           "utm-arm",
+  #           # "utm-x86",
+  #           # "kube-edkimo",
+  #           # "kube-michael",
+  #           # "home-goe",
+  #           # "home-ber",
+  #           # "rpi-zero,",
+  #         ]
+  #   steps:
+  #     - name: free disk space
+  #       uses: jlumbroso/free-disk-space@main
+  #     - uses: actions/checkout@v4
+  #     - uses: DeterminateSystems/nix-installer-action@main
+  #     - run: nix build .#nixosConfigurations.${{ matrix.configuration }}.config.system.build.toplevel
