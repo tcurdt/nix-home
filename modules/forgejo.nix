@@ -40,7 +40,7 @@ in
     selfRegistration = lib.mkOption {
       type = lib.types.bool;
       default = false;
-      description = "Whether to disable self-service Forgejo registration.";
+      description = "Whether to allow self-service Forgejo registration.";
     };
 
     domain_crt = lib.mkOption {
