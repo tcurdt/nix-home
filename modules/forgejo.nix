@@ -83,6 +83,13 @@ in
         description = "File containing the Forgejo OIDC client secret.";
       };
 
+      adminGroup = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "forgejo_admins";
+        description = "Pocket ID group claim whose members receive Forgejo administrator privileges.";
+      };
+
     };
 
     extraSettings = lib.mkOption {
@@ -129,8 +136,7 @@ in
         // lib.optionalAttrs (oidcIssuer != "") {
           ALLOW_ONLY_EXTERNAL_REGISTRATION = true;
           ENABLE_BASIC_AUTHENTICATION = false;
-          ENABLE_PASSWORD_SIGNIN_FORM = false;
-          ENABLE_PASSKEY_AUTHENTICATION = false;
+          ENABLE_INTERNAL_SIGNIN = false;
         };
         oauth2_client = lib.optionalAttrs (oidcIssuer != "") {
           ACCOUNT_LINKING = "auto";
@@ -186,7 +192,11 @@ in
             --secret "$(${pkgs.coreutils}/bin/cat ${lib.escapeShellArg cfg.oidc.clientSecretPath})" \
             --auto-discover-url ${lib.escapeShellArg "${oidcIssuer}/.well-known/openid-configuration"} \
             --skip-local-2fa \
-            --scopes openid --scopes email --scopes profile
+            --scopes openid --scopes email --scopes profile --scopes groups \
+            --group-claim-name groups \
+            ${lib.optionalString (
+              cfg.oidc.adminGroup != null
+            ) "--admin-group ${lib.escapeShellArg cfg.oidc.adminGroup}"}
         else
           forgejo admin auth add-oauth \
             --config /var/lib/forgejo/custom/conf/app.ini \
@@ -196,7 +206,11 @@ in
             --secret "$(${pkgs.coreutils}/bin/cat ${lib.escapeShellArg cfg.oidc.clientSecretPath})" \
             --auto-discover-url ${lib.escapeShellArg "${oidcIssuer}/.well-known/openid-configuration"} \
             --skip-local-2fa \
-            --scopes openid --scopes email --scopes profile
+            --scopes openid --scopes email --scopes profile --scopes groups \
+            --group-claim-name groups \
+            ${lib.optionalString (
+              cfg.oidc.adminGroup != null
+            ) "--admin-group ${lib.escapeShellArg cfg.oidc.adminGroup}"}
         fi
       '';
     };

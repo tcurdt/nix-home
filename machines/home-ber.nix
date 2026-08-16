@@ -46,6 +46,7 @@
     domain_key = "/secrets/certs/git.home/server.key";
     oidc = {
       issuer = "id.home";
+      adminGroup = "forgejo_admins";
     };
   };
 
