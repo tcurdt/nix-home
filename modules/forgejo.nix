@@ -37,9 +37,9 @@ in
       description = "Whether to enable Forgejo LFS support.";
     };
 
-    disableRegistration = lib.mkOption {
+    selfRegistration = lib.mkOption {
       type = lib.types.bool;
-      default = true;
+      default = false;
       description = "Whether to disable self-service Forgejo registration.";
     };
 
@@ -82,6 +82,7 @@ in
         default = "/secrets/forgejo/oidc-client-secret";
         description = "File containing the Forgejo OIDC client secret.";
       };
+
     };
 
     extraSettings = lib.mkOption {
@@ -114,7 +115,7 @@ in
       enable = true;
       lfs.enable = cfg.lfs;
 
-      settings = {
+      settings = lib.recursiveUpdate {
         server = {
           DOMAIN = cfg.server;
           ROOT_URL = cfg.url;
@@ -122,10 +123,23 @@ in
           HTTP_PORT = cfg.port;
         };
 
-        service.DISABLE_REGISTRATION = cfg.disableRegistration;
+        service = {
+          DISABLE_REGISTRATION = !cfg.selfRegistration;
+        }
+        // lib.optionalAttrs (oidcIssuer != "") {
+          ALLOW_ONLY_EXTERNAL_REGISTRATION = true;
+          ENABLE_BASIC_AUTHENTICATION = false;
+          ENABLE_PASSWORD_SIGNIN_FORM = false;
+          ENABLE_PASSKEY_AUTHENTICATION = false;
+        };
+        oauth2_client = lib.optionalAttrs (oidcIssuer != "") {
+          ACCOUNT_LINKING = "auto";
+          ENABLE_AUTO_REGISTRATION = true;
+          REGISTER_EMAIL_CONFIRM = false;
+          USERNAME = "preferred_username";
+        };
         session.COOKIE_SECURE = true;
-      }
-      // cfg.extraSettings;
+      } cfg.extraSettings;
     };
 
     services.my.webserver.virtualHosts.${cfg.server} = {
@@ -149,7 +163,7 @@ in
       requires = [ "forgejo.service" ];
       path = [
         config.services.forgejo.package
-        pkgs.gnugrep
+        pkgs.gawk
       ];
       serviceConfig = {
         Type = "oneshot";
@@ -157,14 +171,33 @@ in
         Group = "forgejo";
       };
       script = ''
-        forgejo admin auth list --config /var/lib/forgejo/custom/conf/app.ini | grep -q ${lib.escapeShellArg cfg.oidc.name} || \
+        auth_id="$(
+          forgejo admin auth list --config /var/lib/forgejo/custom/conf/app.ini \
+            | awk -F '\t' -v name=${lib.escapeShellArg cfg.oidc.name} '$2 == name { print $1 }'
+        )"
+
+        if [ -n "$auth_id" ]; then
+          forgejo admin auth update-oauth \
+            --config /var/lib/forgejo/custom/conf/app.ini \
+            --id "$auth_id" \
+            --name ${lib.escapeShellArg cfg.oidc.name} \
+            --provider openidConnect \
+            --key ${lib.escapeShellArg cfg.oidc.clientId} \
+            --secret "$(${pkgs.coreutils}/bin/cat ${lib.escapeShellArg cfg.oidc.clientSecretPath})" \
+            --auto-discover-url ${lib.escapeShellArg "${oidcIssuer}/.well-known/openid-configuration"} \
+            --skip-local-2fa \
+            --scopes openid --scopes email --scopes profile
+        else
           forgejo admin auth add-oauth \
             --config /var/lib/forgejo/custom/conf/app.ini \
             --name ${lib.escapeShellArg cfg.oidc.name} \
             --provider openidConnect \
             --key ${lib.escapeShellArg cfg.oidc.clientId} \
             --secret "$(${pkgs.coreutils}/bin/cat ${lib.escapeShellArg cfg.oidc.clientSecretPath})" \
-            --auto-discover-url ${lib.escapeShellArg "${oidcIssuer}/.well-known/openid-configuration"}
+            --auto-discover-url ${lib.escapeShellArg "${oidcIssuer}/.well-known/openid-configuration"} \
+            --skip-local-2fa \
+            --scopes openid --scopes email --scopes profile
+        fi
       '';
     };
   };
