@@ -25,6 +25,7 @@
     ../modules/webserver.nix
     ../modules/oidc.nix
     ../modules/forgejo.nix
+    ../modules/grafana.nix
   ];
 
   services.my.webserver = {
@@ -47,6 +48,17 @@
     oidc = {
       issuer = "id.home";
       adminGroup = "forgejo_admins";
+    };
+  };
+
+  services.my.grafana = {
+    enable = true;
+    server = "grafana.home";
+    domain_crt = "/secrets/certs/grafana.home/server.crt";
+    domain_key = "/secrets/certs/grafana.home/server.key";
+    oidc = {
+      issuer = "id.home";
+      adminGroup = "grafana_admins";
     };
   };
 

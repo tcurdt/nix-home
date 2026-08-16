@@ -6,6 +6,7 @@
 
 let
   cfg = config.services.my.grafana;
+  hasDomainCertificate = cfg.domain_crt != null && cfg.domain_key != null;
   listen = "${cfg.address}:${toString cfg.port}";
   oidcIssuer =
     if cfg.oidc.issuer == "" then
@@ -17,7 +18,7 @@ let
 in
 {
   imports = [
-    ./nginx.nix
+    ./webserver.nix
   ];
 
   options.services.my.grafana = {
@@ -42,10 +43,24 @@ in
       description = "Port Grafana listens on.";
     };
 
-    # sudo sh -c 'openssl rand -hex 32 | tr -d "\n" > /secrets/grafana-secret-key'
+    domain_crt = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "/secrets/certs/grafana.example.org/server.crt";
+      description = "Path to a pre-existing TLS certificate. Must be set together with domain_key.";
+    };
+
+    domain_key = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "/secrets/certs/grafana.example.org/server.key";
+      description = "Path to a pre-existing TLS private key. Must be set together with domain_crt.";
+    };
+
+    # sudo sh -c 'openssl rand -hex 32 | tr -d "\n" > /secrets/grafana/secret.key'
     secretKeyPath = lib.mkOption {
       type = lib.types.str;
-      default = "/secrets/grafana-secret-key";
+      default = "/secrets/grafana/secret.key";
       description = "File containing Grafana's secret_key.";
     };
 
@@ -63,10 +78,10 @@ in
         description = "OIDC client ID used by Grafana.";
       };
 
-      # sudo sh -c 'openssl rand -hex 32 | tr -d "\n" > /secrets/grafana-oidc-client-secret'
+      # sudo sh -c 'openssl rand -hex 32 | tr -d "\n" > /secrets/grafana/oidc-client-secret'
       clientSecretPath = lib.mkOption {
         type = lib.types.str;
-        default = "/secrets/grafana-oidc-client-secret";
+        default = "/secrets/grafana/oidc-client-secret";
         description = "File containing the Grafana OIDC client secret.";
       };
 
@@ -80,6 +95,13 @@ in
         type = lib.types.bool;
         default = true;
         description = "Whether Grafana may create users from OIDC logins.";
+      };
+
+      adminGroup = lib.mkOption {
+        type = lib.types.nullOr (lib.types.strMatching "[A-Za-z0-9_]+");
+        default = null;
+        example = "grafana_admins";
+        description = "Pocket ID group whose members receive Grafana administrator privileges.";
       };
 
       settings = lib.mkOption {
@@ -110,6 +132,17 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = (cfg.domain_crt == null) == (cfg.domain_key == null);
+        message = "services.my.grafana.domain_crt and services.my.grafana.domain_key must be set together.";
+      }
+      {
+        assertion = cfg.server == null || hasDomainCertificate || config.services.my.webserver.acme != null;
+        message = "services.my.grafana requires a certificate pair or services.my.webserver.acme to be set.";
+      }
+    ];
+
     services.grafana = {
       enable = true;
       settings =
@@ -140,11 +173,16 @@ in
                 allow_sign_up = cfg.oidc.allowSignUp;
                 client_id = cfg.oidc.clientId;
                 client_secret = "$__file{${cfg.oidc.clientSecretPath}}";
-                scopes = cfg.oidc.scopes;
+                scopes = cfg.oidc.scopes + lib.optionalString (cfg.oidc.adminGroup != null) " groups";
                 auth_url = "${oidcIssuer}/authorize";
                 token_url = "${oidcIssuer}/api/oidc/token";
                 api_url = "${oidcIssuer}/api/oidc/userinfo";
                 use_pkce = true;
+              }
+              // lib.optionalAttrs (cfg.oidc.adminGroup != null) {
+                allow_assign_grafana_admin = true;
+                role_attribute_path = "contains(groups[*], '${cfg.oidc.adminGroup}') && 'GrafanaAdmin' || 'Viewer'";
+                role_attribute_strict = true;
               }
               // cfg.oidc.settings;
             }) cfg.settings
@@ -154,9 +192,16 @@ in
 
     services.my.webserver = lib.mkIf (cfg.server != null) {
       enable = true;
-      virtualHosts.${cfg.server}.locations."/" = {
-        proxyPass = "http://${listen}";
-        proxyWebsockets = true;
+      virtualHosts.${cfg.server} = {
+        locations."/" = {
+          proxyPass = "http://${listen}";
+          proxyWebsockets = true;
+        };
+      }
+      // lib.optionalAttrs hasDomainCertificate {
+        enableACME = false;
+        sslCertificate = cfg.domain_crt;
+        sslCertificateKey = cfg.domain_key;
       };
     };
   };
