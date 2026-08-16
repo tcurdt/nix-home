@@ -8,6 +8,8 @@
   networking.domain = "home";
   system.stateVersion = "23.11";
 
+  security.pki.certificateFiles = [ ../ca/home.crt ];
+
   imports = [
 
     ../hardware/lenovo.nix
