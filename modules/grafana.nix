@@ -143,13 +143,25 @@ in
       }
     ];
 
+    systemd.tmpfiles.rules =
+      [ "z ${cfg.secretKeyPath} 0640 root grafana - -" ]
+      ++ lib.optional (oidcIssuer != "") "z ${cfg.oidc.clientSecretPath} 0640 root grafana - -"
+      ++ lib.optionals hasDomainCertificate [
+        "z ${cfg.domain_crt} 0644 root nginx - -"
+        "z ${cfg.domain_key} 0640 root nginx - -"
+      ];
+
     services.grafana = {
       enable = true;
       settings =
         lib.recursiveUpdate
           {
             analytics.reporting_enabled = false;
-            "auth.grafana_com".auto_login = true;
+            auth = lib.optionalAttrs (oidcIssuer != "") {
+              disable_login_form = true;
+              oauth_auto_login = true;
+            };
+            "auth.basic".enabled = oidcIssuer == "";
             server = {
               http_addr = cfg.address;
               http_port = cfg.port;
