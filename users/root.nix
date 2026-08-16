@@ -1,10 +1,11 @@
 {
+  inputs,
   pkgs,
   ...
 }:
 {
   users.users.root = {
-    profile = import ../profiles/tcurdt.nix;
+    profile = import inputs.user.profile.tcurdt;
     shell = pkgs.bash;
 
     openssh.authorizedKeys.keyFiles = [ ../keys/tcurdt.pub ];

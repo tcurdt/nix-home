@@ -1,6 +1,6 @@
-{ ... }:
+{ inputs, ... }:
 {
-  imports = [ ./profiles.nix ];
+  imports = [ inputs.user.nixosModules.profiles ];
 
   security.sudo.wheelNeedsPassword = false;
   security.sudo.execWheelOnly = true;

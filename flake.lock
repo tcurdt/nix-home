@@ -73,7 +73,8 @@
     "root": {
       "inputs": {
         "comin": "comin",
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_2",
+        "user": "user"
       }
     },
     "treefmt-nix": {
@@ -91,6 +92,21 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "user": {
+      "locked": {
+        "lastModified": 1786838646,
+        "narHash": "sha256-JMiImyk+kYnkWeyvwCj+IWJvGMJkAVkBqVUZt2Pzfmk=",
+        "owner": "tcurdt",
+        "repo": "nix-user",
+        "rev": "9ce9bb6be1696611517669a141b131ca37b45656",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tcurdt",
+        "repo": "nix-user",
         "type": "github"
       }
     }
