@@ -10,7 +10,15 @@ on:
       - "README.md"
 
 jobs:
-  build-x86:
+  check:
+    name: nix flake check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: cachix/install-nix-action@v31
+      - run: nix flake check path:.
+
+  build:
     name: build x86 systems
     runs-on: ubuntu-latest
     strategy:
@@ -20,31 +28,7 @@ jobs:
             "home-ber",
           ]
     steps:
-      - name: free disk space
-        uses: jlumbroso/free-disk-space@main
+      # - uses: jlumbroso/free-disk-space@main
       - uses: actions/checkout@v7
-      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: cachix/install-nix-action@v31
       - run: nix build .#nixosConfigurations.${{ matrix.configuration }}.config.system.build.toplevel
-
-  # build-arm:
-  #   name: build arm systems
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       # architecture: [arm64]
-  #       configuration: [
-  #           # "app",
-  #           "utm-arm",
-  #           # "utm-x86",
-  #           # "kube-edkimo",
-  #           # "kube-michael",
-  #           # "home-goe",
-  #           # "home-ber",
-  #           # "rpi-zero,",
-  #         ]
-  #   steps:
-  #     - name: free disk space
-  #       uses: jlumbroso/free-disk-space@main
-  #     - uses: actions/checkout@v4
-  #     - uses: DeterminateSystems/nix-installer-action@main
-  #     - run: nix build .#nixosConfigurations.${{ matrix.configuration }}.config.system.build.toplevel
