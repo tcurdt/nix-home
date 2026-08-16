@@ -22,6 +22,7 @@
 
     ../modules/webserver.nix
     ../modules/oidc.nix
+    ../modules/forgejo.nix
   ];
 
   services.my.webserver = {
@@ -30,10 +31,20 @@
   };
 
   # sudo sh -c 'openssl rand -hex 32 | tr -d "\n" > /secrets/pocket-id.key'
+  # open https://id.home/setup
   services.my.oidc = {
     server = "id.home";
     domain_crt = "/secrets/certs/id.home/server.crt";
     domain_key = "/secrets/certs/id.home/server.key";
+  };
+
+  services.my.forgejo = {
+    server = "git.home";
+    domain_crt = "/secrets/certs/git.home/server.crt";
+    domain_key = "/secrets/certs/git.home/server.key";
+    oidc = {
+      issuer = "id.home";
+    };
   };
 
 }

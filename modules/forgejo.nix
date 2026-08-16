@@ -7,6 +7,7 @@
 
 let
   cfg = config.services.my.forgejo;
+  hasDomainCertificate = cfg.domain_crt != null && cfg.domain_key != null;
   oidcIssuer = if cfg.oidc.issuer == "" then "" else "https://${cfg.oidc.issuer}";
 in
 {
@@ -42,6 +43,20 @@ in
       description = "Whether to disable self-service Forgejo registration.";
     };
 
+    domain_crt = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "/secrets/certs/git.example.org/server.crt";
+      description = "Path to a pre-existing TLS certificate. Must be set together with domain_key.";
+    };
+
+    domain_key = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "/secrets/certs/git.example.org/server.key";
+      description = "Path to a pre-existing TLS private key. Must be set together with domain_crt.";
+    };
+
     oidc = {
       issuer = lib.mkOption {
         type = lib.types.str;
@@ -64,7 +79,7 @@ in
 
       clientSecretPath = lib.mkOption {
         type = lib.types.str;
-        default = "/secrets/forgejo-oidc-client-secret";
+        default = "/secrets/forgejo/oidc-client-secret";
         description = "File containing the Forgejo OIDC client secret.";
       };
     };
@@ -84,6 +99,17 @@ in
   };
 
   config = lib.mkIf (cfg.server != "") {
+    assertions = [
+      {
+        assertion = (cfg.domain_crt == null) == (cfg.domain_key == null);
+        message = "services.my.forgejo.domain_crt and services.my.forgejo.domain_key must be set together.";
+      }
+      {
+        assertion = hasDomainCertificate || config.services.my.webserver.acme != null;
+        message = "services.my.forgejo requires a certificate pair or services.my.webserver.acme to be set.";
+      }
+    ];
+
     services.forgejo = {
       enable = true;
       lfs.enable = cfg.lfs;
@@ -102,12 +128,19 @@ in
       // cfg.extraSettings;
     };
 
-    services.my.webserver.virtualHosts.${cfg.server}.locations."/" = {
-      proxyPass = "http://${config.services.forgejo.settings.server.HTTP_ADDR}:${toString config.services.forgejo.settings.server.HTTP_PORT}";
-      proxyWebsockets = true;
-      extraConfig = ''
-        client_max_body_size 512M;
-      '';
+    services.my.webserver.virtualHosts.${cfg.server} = {
+      locations."/" = {
+        proxyPass = "http://${config.services.forgejo.settings.server.HTTP_ADDR}:${toString config.services.forgejo.settings.server.HTTP_PORT}";
+        proxyWebsockets = true;
+        extraConfig = ''
+          client_max_body_size 512M;
+        '';
+      };
+    }
+    // lib.optionalAttrs hasDomainCertificate {
+      enableACME = false;
+      sslCertificate = cfg.domain_crt;
+      sslCertificateKey = cfg.domain_key;
     };
 
     systemd.services.forgejo-bootstrap-oidc = lib.mkIf (oidcIssuer != "") {

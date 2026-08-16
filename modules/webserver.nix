@@ -39,6 +39,7 @@ in
   config = lib.mkIf cfg.enable {
     services.nginx = {
       enable = true;
+      recommendedProxySettings = true;
       # package = lib.mkDefault pkgs.angie;
 
       virtualHosts = lib.mapAttrs (

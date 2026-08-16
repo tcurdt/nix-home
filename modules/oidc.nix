@@ -29,10 +29,10 @@ in
       description = "Port Pocket ID listens on.";
     };
 
-    # sudo sh -c 'openssl rand -hex 32 | tr -d "\n" > /secrets/pocket-id.key'
+    # sudo sh -c 'openssl rand -hex 32 | tr -d "\n" > /secrets/pocket-id/secret.key'
     encryptionKeyFile = lib.mkOption {
       type = lib.types.str;
-      default = "/secrets/pocket-id.key";
+      default = "/secrets/pocket-id/secret.key";
       description = "File containing the Pocket ID encryption key.";
     };
 
