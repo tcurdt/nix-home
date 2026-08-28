@@ -8,6 +8,8 @@
   networking.domain = "home";
   system.stateVersion = "23.11";
 
+  security.pki.certificateFiles = [ ../ca/home.crt ];
+
   imports = [
 
     ../hardware/lenovo.nix
@@ -24,7 +26,7 @@
     ../modules/users.nix
 
     ../users/root.nix
-    ../users/ops.nix
+    ../users/tcurdt.nix
 
     { users.users.root.password = "secret"; }
 
