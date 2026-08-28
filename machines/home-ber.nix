@@ -49,12 +49,8 @@
     domain_key = "/secrets/certs/id.home/server.key";
 
     # groups = [
-    #   {
-    #     name = "forgejo_admins";
-    #   }
-    #   {
-    #     name = "grafana_admins";
-    #   }
+    #   "Forgejo Admins"
+    #   "Grafana Admins"
     # ];
 
     # clients = [
