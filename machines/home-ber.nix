@@ -90,6 +90,7 @@
   };
 
   services.my.grafana = {
+    enable = true;
     server = "grafana.home";
     domain_crt = "/secrets/certs/grafana.home/server.crt";
     domain_key = "/secrets/certs/grafana.home/server.key";
