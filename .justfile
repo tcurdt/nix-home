@@ -9,7 +9,7 @@ build:
 
 # local version (better disable comin)
 switch:
-    nix run --inputs-from path:. nixpkgs#nixos-rebuild -- switch --no-reexec --flake path:.#home-ber --build-host home-ber --target-host home-ber
+    nix run --inputs-from . nixpkgs#nixos-rebuild -- switch --no-reexec --flake .#home-ber --build-host home-ber --target-host home-ber
 
 # comin
 released:
