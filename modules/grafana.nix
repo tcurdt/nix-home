@@ -159,7 +159,6 @@ in
             analytics.reporting_enabled = false;
             auth = lib.optionalAttrs (oidcIssuer != "") {
               disable_login_form = true;
-              oauth_auto_login = true;
             };
             "auth.basic".enabled = oidcIssuer == "";
             server = {

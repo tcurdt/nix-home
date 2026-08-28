@@ -47,6 +47,36 @@
     server = "id.home";
     domain_crt = "/secrets/certs/id.home/server.crt";
     domain_key = "/secrets/certs/id.home/server.key";
+
+    # groups = [
+    #   {
+    #     name = "forgejo_admins";
+    #   }
+    #   {
+    #     name = "grafana_admins";
+    #   }
+    # ];
+
+    # clients = [
+    #   {
+    #     client_id = "forgejo";
+    #     pkce = true;
+    #     consent = false;
+    #     callbacks = [
+    #       "https://git.home/user/oauth2/pocket-id/callback"
+    #     ];
+    #     secret = "/secrets/forgejo/oidc-client-secret";
+    #   }
+    #   {
+    #     client_id = "grafana";
+    #     pkce = true;
+    #     consent = false;
+    #     callbacks = [
+    #       "https://grafana.home/login/generic_oauth"
+    #     ];
+    #     secret = "/secrets/grafana/oidc-client-secret";
+    #   }
+    # ];
   };
 
   services.my.forgejo = {
@@ -60,7 +90,6 @@
   };
 
   services.my.grafana = {
-    enable = true;
     server = "grafana.home";
     domain_crt = "/secrets/certs/grafana.home/server.crt";
     domain_key = "/secrets/certs/grafana.home/server.key";
@@ -68,6 +97,10 @@
       issuer = "id.home";
       adminGroup = "grafana_admins";
     };
+    # dashboards = [
+    # ];
+    # datasources = [
+    # ];
   };
 
 }
