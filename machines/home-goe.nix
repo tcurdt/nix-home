@@ -13,6 +13,14 @@
     ../hardware/lenovo.nix
 
     ../modules/server.nix
+    {
+      # strict filtering rejects packets unless their source is reachable through
+      # the receiving interface, providing spoof protection for conventional routing.
+      boot.kernel.sysctl = {
+        "net.ipv4.conf.default.rp_filter" = 1;
+        "net.ipv4.conf.all.rp_filter" = 1;
+      };
+    }
     ../modules/users.nix
 
     ../users/root.nix

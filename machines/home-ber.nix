@@ -15,6 +15,14 @@
     ../hardware/lenovo.nix
 
     ../modules/server.nix
+    {
+      # strict filtering rejects packets unless their source is reachable through
+      # the receiving interface, providing spoof protection for conventional routing.
+      boot.kernel.sysctl = {
+        "net.ipv4.conf.default.rp_filter" = 1;
+        "net.ipv4.conf.all.rp_filter" = 1;
+      };
+    }
     ../modules/users.nix
 
     ../users/root.nix
@@ -33,7 +41,7 @@
     # acme = "email@example.com";
   };
 
-  # sudo sh -c 'openssl rand -hex 32 | tr -d "\n" > /secrets/pocket-id.key'
+  # openssl rand -hex 32 | tr -d "\n" > /secrets/pocket-id/secret.key
   # open https://id.home/setup
   services.my.oidc = {
     server = "id.home";

@@ -1,11 +1,10 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 {
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
   ];
 
-  # time.timeZone = "Europe/Berlin";
   time.timeZone = "UTC";
 
   i18n.defaultLocale = "en_US.UTF-8";
@@ -25,7 +24,6 @@
 
   zramSwap.enable = false;
   boot.tmp.cleanOnBoot = true;
-  # boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
 
   # kernel
 
@@ -55,9 +53,6 @@
     "net.ipv4.icmp_echo_ignore_broadcasts" = 1;
     # ignore bad ICMP errors
     "net.ipv4.icmp_ignore_bogus_error_responses" = 1;
-    # reverse-path filter for spoof protection
-    "net.ipv4.conf.default.rp_filter" = 1;
-    "net.ipv4.conf.all.rp_filter" = 1;
     # SYN flood protection
     "net.ipv4.tcp_syncookies" = 1;
     # do not accept ICMP redirects (prevent MITM attacks)
@@ -80,14 +75,15 @@
     # requires >= 4.9 & kernel module
     "net.ipv4.tcp_congestion_control" = "bbr";
     # requires >= 4.19
-    "net.core.default_qdisc" = "cake";
-    #"net.core.default_qdisc" = "fq";
+    "net.core.default_qdisc" = "fq";
     # note that inotify watches consume 1kB on 64-bit machines.
     # "fs.inotify.max_user_watches"   = 1048576;   # default:  8192
     # "fs.inotify.max_user_instances" =    1024;   # default:   128
     # "fs.inotify.max_queued_events"  =   32768;   # default: 16384
-    "net.core.rmem_max" = 2500000;
-    "net.core.wmem_max" = 2500000;
+    "net.core.rmem_max" = 67108864;
+    "net.core.wmem_max" = 67108864;
+    "net.ipv4.tcp_rmem" = "4096 87380 67108864";
+    "net.ipv4.tcp_wmem" = "4096 65536 67108864";
     # "net.core.somaxconn" = 4096;
     # "vm.overcommit_memory" = 1;
   };
@@ -95,6 +91,8 @@
   # networking
 
   # networking.enableIPv6 = false;
+
+  networking.domain = lib.mkDefault "nixos";
 
   networking.firewall.enable = true;
   networking.firewall.allowedTCPPorts = [ 22 ];
@@ -118,7 +116,7 @@
 
   # caching
 
-  # you’ll first need to populate /etc/cachix-agent.token with the previously generated agent token with the contents:CACHIX_AGENT_TOKEN=XXX.
+  # populate /etc/cachix-agent.token with agent token with the contents:CACHIX_AGENT_TOKEN=XXX.
   # services.cachix-agent.enable = true;
   # agent name is inferred from the hostname
   # networking.hostName = "myhostname";
@@ -131,12 +129,14 @@
   nix.gc = {
     automatic = true;
     dates = "Monday 01:00";
-    options = "--delete-older-than 7d";
+    options = "--delete-older-than 3d";
   };
   # nix.extraOptions = ''
   # min-free = ${toString (100 * 1024 * 1024)}
   # max-free = ${toString (1024 * 1024 * 1024)}
   # '';
+  boot.loader.systemd-boot.configurationLimit = 3;
+  boot.loader.grub.configurationLimit = 3;
 
   systemd = {
 
@@ -209,19 +209,6 @@
   #   FLAKE = "/etc/nixos/flake";
   # };
 
-  # environment.variables = {
-  #   PATH = [
-  #     "\${HOME}/.bin"
-  #     "\$/usr/local/bin"
-  #   ];
-  # };
-
-  # security.auditd.enable = true;
-  # security.audit.enable = true;
-  # security.audit.rules = [
-  #   "-a exit,always -F arch=b64 -S execve"
-  # ];
-
   # services.fstrim.enable = true;
 
   # ssh
@@ -236,8 +223,6 @@
       # AllowUsers = [];
       PasswordAuthentication = false;
       KbdInteractiveAuthentication = false;
-      #PermitRootLogin = "without-password";
-      #X11Forwarding = false;
     };
     extraConfig = ''
       IgnoreRhosts yes
