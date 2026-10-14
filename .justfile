@@ -1,5 +1,9 @@
 set quiet
 
+# update flake.lock to latest inputs
+update:
+    nix flake update
+
 check:
     nix flake check --all-systems path:.
 
