@@ -34,11 +34,22 @@
     ../modules/oidc.nix
     ../modules/forgejo.nix
     ../modules/grafana.nix
+    ../modules/paperless.nix
   ];
 
   services.my.webserver = {
     enable = true;
     # acme = "email@example.com";
+  };
+
+  services.my.paperless = {
+    server = "paperless.home";
+    domain_crt = "/secrets/certs/paperless.home/server.crt";
+    domain_key = "/secrets/certs/paperless.home/server.key";
+    oidc = {
+      issuer = "id.home";
+      adminGroup = "paperless_admins";
+    };
   };
 
   # openssl rand -hex 32 | tr -d "\n" > /secrets/pocket-id/secret.key
@@ -51,6 +62,7 @@
     # groups = [
     #   "Forgejo Admins"
     #   "Grafana Admins"
+    #   "Paperless Admins"
     # ];
 
     # clients = [
@@ -71,6 +83,15 @@
     #       "https://grafana.home/login/generic_oauth"
     #     ];
     #     secret = "/secrets/grafana/oidc-client-secret";
+    #   }
+    #   {
+    #     client_id = "paperless";
+    #     pkce = true;
+    #     consent = false;
+    #     callbacks = [
+    #       "https://paperless.home/accounts/oidc/pocket-id/login/callback/"
+    #     ];
+    #     secret = "/secrets/paperless/oidc-client-secret";
     #   }
     # ];
   };
