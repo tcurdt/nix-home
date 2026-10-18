@@ -46,6 +46,8 @@
     server = "paperless.home";
     domain_crt = "/secrets/certs/paperless.home/server.crt";
     domain_key = "/secrets/certs/paperless.home/server.key";
+    # the home CA has no keyUsage extension, which python rejects in strict mode
+    strictX509 = false;
     oidc = {
       issuer = "id.home";
       adminGroup = "paperless_admins";

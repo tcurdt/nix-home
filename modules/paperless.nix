@@ -44,6 +44,16 @@ let
     }
   );
 
+  # Python >= 3.13 (and urllib3) verify with VERIFY_X509_STRICT, which rejects
+  # CAs without a keyUsage extension. Neutralize the flag before urllib3 copies
+  # it, then chain to the interpreter's own sitecustomize this one shadows.
+  python = config.services.paperless.package.python;
+  relaxedX509 = pkgs.writeTextDir "sitecustomize.py" ''
+    import ssl
+    ssl.VERIFY_X509_STRICT = ssl.VerifyFlags(0)
+    exec(open("${python}/${python.sitePackages}/sitecustomize.py").read())
+  '';
+
   paperlessUnits = [
     "paperless-secret-key.service"
     "paperless-scheduler.service"
@@ -132,6 +142,12 @@ in
       };
     };
 
+    strictX509 = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Whether outgoing TLS (e.g. to the OIDC issuer) uses Python's strict X.509 verification. Disable for CAs without a keyUsage extension.";
+    };
+
     extraSettings = lib.mkOption {
       type = lib.types.attrsOf lib.types.anything;
       default = { };
@@ -187,6 +203,11 @@ in
       }
       // cfg.extraSettings;
     };
+
+    # mirrors the PYTHONPATH set by the nixpkgs paperless module
+    systemd.services.paperless-web.environment.PYTHONPATH = lib.mkIf (!cfg.strictX509) (
+      lib.mkForce "${relaxedX509}:${python.pkgs.makePythonPath config.services.paperless.package.passthru.dependencies}:${config.services.paperless.package}/lib/paperless-ngx/src"
+    );
 
     systemd.services.paperless-oidc-env = lib.mkIf (oidcIssuer != "") {
       description = "Paperless OIDC provider configuration";
