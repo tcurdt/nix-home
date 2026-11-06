@@ -202,7 +202,9 @@
   environment.systemPackages = [
     pkgs.nano
     pkgs.curl
+    pkgs.openssl
     pkgs.gitMinimal
+    pkgs.nvd
   ];
 
   # environment.sessionVariables = {

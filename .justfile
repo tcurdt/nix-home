@@ -1,21 +1,19 @@
 set quiet
 
-# update flake.lock to latest inputs
-update:
-    nix flake update
-
 check:
     nix flake check --all-systems path:.
 
-# local version
-build:
-    nix build --eval-store daemon --store ssh-ng://home-ber --no-link path:.#nixosConfigurations.home-ber.config.system.build.toplevel
+update:
+    nix flake update
 
-# local version (better disable comin)
-switch:
-    nix run --inputs-from . nixpkgs#nixos-rebuild -- switch --no-reexec --flake .#home-ber --build-host home-ber --target-host home-ber
+build machine:
+    nix build --eval-store daemon --store ssh-ng://{{ machine }} --no-link .#nixosConfigurations.{{ machine }}.config.system.build.toplevel
 
-# comin
-released:
-    ssh home-ber \
-      "nixos-rebuild switch --flake github:tcurdt/nix-home#home-ber"
+diff machine:
+    ssh {{ machine }} nvd diff /run/current-system $(nix eval --raw .#nixosConfigurations.{{ machine }}.config.system.build.toplevel.outPath)
+
+test machine:
+    nix run --inputs-from . nixpkgs#nixos-rebuild -- test --no-reexec --flake .#{{ machine }} --build-host {{ machine }} --target-host {{ machine }}
+
+switch machine:
+    nix run --inputs-from . nixpkgs#nixos-rebuild -- switch --no-reexec --flake .#{{ machine }} --build-host {{ machine }} --target-host {{ machine }}
