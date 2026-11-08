@@ -1,0 +1,39 @@
+// Top bar. Managed by nix-home.
+// Wifi and bluetooth live in the tray (nm-applet, blueman).
+{
+  "layer": "top",
+  "position": "top",
+  "height": 26,
+  "modules-left": ["hyprland/workspaces"],
+  "modules-center": ["clock"],
+  "modules-right": ["tray", "pulseaudio", "battery", "custom/power"],
+
+  "hyprland/workspaces": {
+    "format": "{id}"
+  },
+  "clock": {
+    "format": "{:%a %d %b  %H:%M}",
+    "tooltip-format": "<tt>{calendar}</tt>"
+  },
+  "tray": {
+    "spacing": 10
+  },
+  "pulseaudio": {
+    "format": "  {volume}%",
+    "format-muted": "  muted",
+    "on-click": "pavucontrol"
+  },
+  "battery": {
+    "states": { "warning": 20, "critical": 10 },
+    "format": "{icon}  {capacity}%",
+    "format-charging": "  {capacity}%",
+    "format-plugged": "  {capacity}%",
+    "format-icons": ["", "", "", "", ""],
+    "tooltip-format": "{timeTo}"
+  },
+  "custom/power": {
+    "format": "",
+    "tooltip": false,
+    "on-click": "powermenu"
+  }
+}

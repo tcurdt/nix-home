@@ -29,6 +29,8 @@
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
 
   boot.loader.systemd-boot.enable = true;
+  # no editing the kernel command line at the boot menu (init=/bin/sh)
+  boot.loader.systemd-boot.editor = false;
   boot.loader.efi.canTouchEfiVariables = true;
 
   boot.initrd.availableKernelModules = [

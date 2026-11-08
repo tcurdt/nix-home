@@ -1,0 +1,23 @@
+# Notifications. Managed by nix-home.
+# They disappear on their own after 5s, also when the app asked for "never".
+# Only critical ones (e.g. battery empty) stay until clicked.
+
+font=Noto Sans 11
+width=360
+padding=12
+margin=10
+border-size=2
+border-radius=8
+background-color=#1e1e2eee
+text-color=#cdd6f4
+border-color=#89b4fa
+max-visible=3
+anchor=top-right
+layer=overlay
+
+default-timeout=5000
+ignore-timeout=1
+
+[urgency=critical]
+border-color=#f38ba8
+default-timeout=0
