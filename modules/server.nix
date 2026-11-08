@@ -67,6 +67,10 @@
     # do not accept IP source route packets (we are not a router)
     "net.ipv4.conf.all.accept_source_route" = 0;
     "net.ipv6.conf.all.accept_source_route" = 0;
+    # strict reverse path filtering: reject packets whose source isn't
+    # reachable through the receiving interface (spoof protection)
+    "net.ipv4.conf.default.rp_filter" = 1;
+    "net.ipv4.conf.all.rp_filter" = 1;
     # protect against tcp time-wait assassination hazards
     "net.ipv4.tcp_rfc1337" = 1;
     # TCP Fast Open (TFO)
@@ -229,7 +233,7 @@
     extraConfig = ''
       IgnoreRhosts yes
       AllowTcpForwarding yes
-      AllowAgentForwarding yes
+      AllowAgentForwarding no
       AllowStreamLocalForwarding no
       AuthenticationMethods publickey
     '';
