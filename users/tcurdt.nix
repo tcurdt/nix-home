@@ -1,6 +1,8 @@
 {
   inputs,
   pkgs,
+  lib,
+  config,
   ...
 }:
 {
@@ -14,7 +16,9 @@
     extraGroups = [
       "wheel"
       "docker"
+      "networkmanager"
     ];
-    hashedPassword = "*"; # no password allowed
+
+    hashedPassword = lib.mkIf (config.users.users.tcurdt.hashedPasswordFile == null) "*";
   };
 }

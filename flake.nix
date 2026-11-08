@@ -16,6 +16,13 @@
     {
       nixosConfigurations = {
 
+        macbook-air = nixpkgs.lib.nixosSystem {
+          specialArgs = { inherit inputs; };
+          modules = [
+            ./machines/macbook-air.nix
+          ];
+        };
+
         # home-goe = nixpkgs.lib.nixosSystem {
         #   specialArgs = { inherit inputs; };
         #   modules = [
@@ -28,7 +35,7 @@
           specialArgs = { inherit inputs; };
           modules = [
             ./machines/home-ber.nix
-            ./modules/comin.nix
+            # ./modules/comin.nix
           ];
         };
 

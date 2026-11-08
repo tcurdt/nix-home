@@ -23,11 +23,10 @@
         "net.ipv4.conf.all.rp_filter" = 1;
       };
     }
-    ../modules/users.nix
 
+    ../modules/users.nix
     ../users/root.nix
     ../users/tcurdt.nix
-
     { users.users.root.password = "secret"; }
 
     # {

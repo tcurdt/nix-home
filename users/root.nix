@@ -1,6 +1,8 @@
 {
   inputs,
   pkgs,
+  lib,
+  config,
   ...
 }:
 {
@@ -10,8 +12,6 @@
 
     openssh.authorizedKeys.keyFiles = [ ../keys/tcurdt.pub ];
 
-    # hashedPassword = "*"; # no password allowed
-    # password = "secret";
-    # promptInitialPassword = true;
+    # hashedPassword = lib.mkIf (config.users.users.root.hashedPasswordFile == null) "*";
   };
 }

@@ -16,4 +16,4 @@ test machine:
     nix run --inputs-from . nixpkgs#nixos-rebuild -- test --no-reexec --flake .#{{ machine }} --build-host {{ machine }} --target-host {{ machine }}
 
 switch machine:
-    nix run --inputs-from . nixpkgs#nixos-rebuild -- switch --no-reexec --flake .#{{ machine }} --build-host {{ machine }} --target-host {{ machine }}
+    nix run --inputs-from . nixpkgs#nixos-rebuild -- switch --no-reexec --flake .#{{ machine }} --build-host {{ machine }} --target-host {{ machine }} --sudo --ask-sudo-password
