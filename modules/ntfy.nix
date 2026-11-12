@@ -11,6 +11,10 @@ let
   listen = "${cfg.address}:${toString cfg.port}";
 in
 {
+  imports = [
+    ./caddy.nix
+  ];
+
   options.services.my.ntfy = {
     enable = lib.mkEnableOption "ntfy";
 
@@ -18,7 +22,7 @@ in
       type = lib.types.nullOr lib.types.str;
       default = null;
       example = "ntfy.example.org";
-      description = "Public server name for ntfy. Null disables nginx registration.";
+      description = "Public server name for ntfy. Null disables Caddy registration.";
     };
 
     address = lib.mkOption {
@@ -79,12 +83,11 @@ in
       // cfg.settings;
     };
 
-    services.my.webserver = lib.mkIf (cfg.server != null) {
+    services.my.caddy = lib.mkIf (cfg.server != null) {
       enable = true;
-      virtualHosts.${cfg.server}.locations."/" = {
-        proxyPass = "http://${listen}";
-        proxyWebsockets = true;
-      };
+      virtualHosts.${cfg.server}.extraConfig = ''
+        reverse_proxy ${listen}
+      '';
     };
   };
 }

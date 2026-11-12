@@ -23,16 +23,15 @@
       users.users.root.hashedPasswordFile = "/secrets/users/root.hash";
     }
 
-    ../modules/webserver.nix
+    ../modules/caddy.nix
     ../modules/oidc.nix
     ../modules/forgejo.nix
     ../modules/grafana.nix
     ../modules/paperless.nix
   ];
 
-  services.my.webserver = {
+  services.my.caddy = {
     enable = true;
-    # acme = "email@example.com";
   };
 
   services.my.paperless = {

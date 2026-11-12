@@ -11,6 +11,10 @@ let
   oidcIssuer = if cfg.oidc.issuer == "" then "" else "https://${cfg.oidc.issuer}";
 in
 {
+  imports = [
+    ./caddy.nix
+  ];
+
   options.services.my.forgejo = {
     server = lib.mkOption {
       type = lib.types.str;
@@ -112,10 +116,11 @@ in
         assertion = (cfg.domain_crt == null) == (cfg.domain_key == null);
         message = "services.my.forgejo.domain_crt and services.my.forgejo.domain_key must be set together.";
       }
-      {
-        assertion = hasDomainCertificate || config.services.my.webserver.acme != null;
-        message = "services.my.forgejo requires a certificate pair or services.my.webserver.acme to be set.";
-      }
+    ];
+
+    systemd.tmpfiles.rules = lib.optionals hasDomainCertificate [
+      "z ${cfg.domain_crt} 0644 root ${config.services.caddy.group} - -"
+      "z ${cfg.domain_key} 0640 root ${config.services.caddy.group} - -"
     ];
 
     services.forgejo = {
@@ -148,19 +153,14 @@ in
       } cfg.extraSettings;
     };
 
-    services.my.webserver.virtualHosts.${cfg.server} = {
-      locations."/" = {
-        proxyPass = "http://${config.services.forgejo.settings.server.HTTP_ADDR}:${toString config.services.forgejo.settings.server.HTTP_PORT}";
-        proxyWebsockets = true;
-        extraConfig = ''
-          client_max_body_size 512M;
-        '';
-      };
-    }
-    // lib.optionalAttrs hasDomainCertificate {
-      enableACME = false;
-      sslCertificate = cfg.domain_crt;
-      sslCertificateKey = cfg.domain_key;
+    services.my.caddy = {
+      enable = true;
+      virtualHosts.${cfg.server}.extraConfig = ''
+        reverse_proxy ${config.services.forgejo.settings.server.HTTP_ADDR}:${toString config.services.forgejo.settings.server.HTTP_PORT}
+      ''
+      + lib.optionalString hasDomainCertificate ''
+        tls ${cfg.domain_crt} ${cfg.domain_key}
+      '';
     };
 
     systemd.services.forgejo-bootstrap-oidc = lib.mkIf (oidcIssuer != "") {

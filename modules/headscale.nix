@@ -15,6 +15,10 @@ let
       "https://${cfg.oidc.issuer}";
 in
 {
+  imports = [
+    ./caddy.nix
+  ];
+
   options.services.my.headscale = {
     server = lib.mkOption {
       type = lib.types.str;
@@ -127,12 +131,10 @@ in
       // cfg.extraSettings;
     };
 
-    services.my.webserver.virtualHosts.${cfg.server}.locations."/" = {
-      proxyPass = "http://${config.services.headscale.address}:${toString config.services.headscale.port}";
-      proxyWebsockets = true;
-      extraConfig = ''
-        proxy_buffering off;
-        proxy_read_timeout 3600s;
+    services.my.caddy = {
+      enable = true;
+      virtualHosts.${cfg.server}.extraConfig = ''
+        reverse_proxy ${config.services.headscale.address}:${toString config.services.headscale.port}
       '';
     };
 

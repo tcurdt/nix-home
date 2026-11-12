@@ -8,11 +8,11 @@
 let
   cfg = config.services.my.homeassistant;
   proxyAddress = builtins.head cfg.serverHost;
-  proxyUrl = "http://${proxyAddress}:${toString cfg.serverPort}";
+  proxyUrl = "${proxyAddress}:${toString cfg.serverPort}";
 in
 {
   imports = [
-    ./nginx.nix
+    ./caddy.nix
   ];
 
   options.services.my.homeassistant = {
@@ -22,7 +22,7 @@ in
       type = lib.types.nullOr lib.types.str;
       default = null;
       example = "home.example.org";
-      description = "Public server name for Home Assistant. Null disables nginx registration.";
+      description = "Public server name for Home Assistant. Null disables Caddy registration.";
     };
 
     name = lib.mkOption {
@@ -96,12 +96,11 @@ in
       pkgs.home-assistant-cli
     ];
 
-    services.my.webserver = lib.mkIf (cfg.server != null) {
+    services.my.caddy = lib.mkIf (cfg.server != null) {
       enable = true;
-      virtualHosts.${cfg.server}.locations."/" = {
-        proxyPass = proxyUrl;
-        proxyWebsockets = true;
-      };
+      virtualHosts.${cfg.server}.extraConfig = ''
+        reverse_proxy ${proxyUrl}
+      '';
     };
   };
 }

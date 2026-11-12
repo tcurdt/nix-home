@@ -18,7 +18,7 @@ let
 in
 {
   imports = [
-    ./webserver.nix
+    ./caddy.nix
   ];
 
   options.services.my.grafana = {
@@ -28,7 +28,7 @@ in
       type = lib.types.nullOr lib.types.str;
       default = null;
       example = "grafana.example.org";
-      description = "Public server name for Grafana. Null disables nginx registration.";
+      description = "Public server name for Grafana. Null disables Caddy registration.";
     };
 
     address = lib.mkOption {
@@ -137,18 +137,14 @@ in
         assertion = (cfg.domain_crt == null) == (cfg.domain_key == null);
         message = "services.my.grafana.domain_crt and services.my.grafana.domain_key must be set together.";
       }
-      {
-        assertion = cfg.server == null || hasDomainCertificate || config.services.my.webserver.acme != null;
-        message = "services.my.grafana requires a certificate pair or services.my.webserver.acme to be set.";
-      }
     ];
 
     systemd.tmpfiles.rules =
       [ "z ${cfg.secretKeyPath} 0640 root grafana - -" ]
       ++ lib.optional (oidcIssuer != "") "z ${cfg.oidc.clientSecretPath} 0640 root grafana - -"
       ++ lib.optionals hasDomainCertificate [
-        "z ${cfg.domain_crt} 0644 root nginx - -"
-        "z ${cfg.domain_key} 0640 root nginx - -"
+        "z ${cfg.domain_crt} 0644 root ${config.services.caddy.group} - -"
+        "z ${cfg.domain_key} 0640 root ${config.services.caddy.group} - -"
       ];
 
     services.grafana = {
@@ -201,19 +197,14 @@ in
       provision = cfg.provision;
     };
 
-    services.my.webserver = lib.mkIf (cfg.server != null) {
+    services.my.caddy = lib.mkIf (cfg.server != null) {
       enable = true;
-      virtualHosts.${cfg.server} = {
-        locations."/" = {
-          proxyPass = "http://${listen}";
-          proxyWebsockets = true;
-        };
-      }
-      // lib.optionalAttrs hasDomainCertificate {
-        enableACME = false;
-        sslCertificate = cfg.domain_crt;
-        sslCertificateKey = cfg.domain_key;
-      };
+      virtualHosts.${cfg.server}.extraConfig = ''
+        reverse_proxy ${listen}
+      ''
+      + lib.optionalString hasDomainCertificate ''
+        tls ${cfg.domain_crt} ${cfg.domain_key}
+      '';
     };
   };
 }

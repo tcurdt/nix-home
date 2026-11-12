@@ -64,7 +64,7 @@ let
 in
 {
   imports = [
-    ./webserver.nix
+    ./caddy.nix
   ];
 
   options.services.my.paperless = {
@@ -168,15 +168,11 @@ in
         assertion = (cfg.domain_crt == null) == (cfg.domain_key == null);
         message = "services.my.paperless.domain_crt and services.my.paperless.domain_key must be set together.";
       }
-      {
-        assertion = hasDomainCertificate || config.services.my.webserver.acme != null;
-        message = "services.my.paperless requires a certificate pair or services.my.webserver.acme to be set.";
-      }
     ];
 
     systemd.tmpfiles.rules = lib.optionals hasDomainCertificate [
-      "z ${cfg.domain_crt} 0644 root nginx - -"
-      "z ${cfg.domain_key} 0640 root nginx - -"
+      "z ${cfg.domain_crt} 0644 root ${config.services.caddy.group} - -"
+      "z ${cfg.domain_key} 0640 root ${config.services.caddy.group} - -"
     ];
 
     services.paperless = {
@@ -229,22 +225,14 @@ in
       '';
     };
 
-    services.my.webserver = {
+    services.my.caddy = {
       enable = true;
-      virtualHosts.${cfg.server} = {
-        locations."/" = {
-          proxyPass = "http://${cfg.address}:${toString cfg.port}";
-          proxyWebsockets = true;
-          extraConfig = ''
-            client_max_body_size 512M;
-          '';
-        };
-      }
-      // lib.optionalAttrs hasDomainCertificate {
-        enableACME = false;
-        sslCertificate = cfg.domain_crt;
-        sslCertificateKey = cfg.domain_key;
-      };
+      virtualHosts.${cfg.server}.extraConfig = ''
+        reverse_proxy ${cfg.address}:${toString cfg.port}
+      ''
+      + lib.optionalString hasDomainCertificate ''
+        tls ${cfg.domain_crt} ${cfg.domain_key}
+      '';
     };
   };
 }

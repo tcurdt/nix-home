@@ -9,6 +9,10 @@ let
   hasDomainCertificate = cfg.domain_crt != null && cfg.domain_key != null;
 in
 {
+  imports = [
+    ./caddy.nix
+  ];
+
   options.services.my.oidc = {
     server = lib.mkOption {
       type = lib.types.str;
@@ -76,10 +80,11 @@ in
         assertion = (cfg.domain_crt == null) == (cfg.domain_key == null);
         message = "services.my.oidc.domain_crt and services.my.oidc.domain_key must be set together.";
       }
-      {
-        assertion = hasDomainCertificate || config.services.my.webserver.acme != null;
-        message = "services.my.oidc requires a certificate pair or services.my.webserver.acme to be set.";
-      }
+    ];
+
+    systemd.tmpfiles.rules = lib.optionals hasDomainCertificate [
+      "z ${cfg.domain_crt} 0644 root ${config.services.caddy.group} - -"
+      "z ${cfg.domain_key} 0640 root ${config.services.caddy.group} - -"
     ];
 
     services.pocket-id = {
@@ -99,20 +104,14 @@ in
       // cfg.extraSettings;
     };
 
-    services.my.webserver.virtualHosts.${cfg.server} = {
-      locations."/" = {
-        proxyPass = "http://${cfg.address}:${toString cfg.port}";
-        extraConfig = ''
-          proxy_busy_buffers_size 512k;
-          proxy_buffers 4 512k;
-          proxy_buffer_size 256k;
-        '';
-      };
-    }
-    // lib.optionalAttrs hasDomainCertificate {
-      enableACME = false;
-      sslCertificate = cfg.domain_crt;
-      sslCertificateKey = cfg.domain_key;
+    services.my.caddy = {
+      enable = true;
+      virtualHosts.${cfg.server}.extraConfig = ''
+        reverse_proxy ${cfg.address}:${toString cfg.port}
+      ''
+      + lib.optionalString hasDomainCertificate ''
+        tls ${cfg.domain_crt} ${cfg.domain_key}
+      '';
     };
 
   };
